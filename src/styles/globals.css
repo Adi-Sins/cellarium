@@ -1,0 +1,32 @@
+/* Import Tailwind CSS so its utility classes are available throughout Cellarium. */
+@import "tailwindcss";
+
+/* 
+ * Cellarium Design System
+ * These variables define the core colours used throughout the application.
+ */
+@theme {
+  --color-cream: #F7F5EB;
+  --color-dusty-rose: #E7C8C3;
+
+  --color-sage-light: #8E9C81;
+  --color-sage: #758467;
+  --color-sage-dark: #59674C;
+
+  --color-ink: #30382A;
+}
+
+/* 
+ * Global page styles.
+ * These rules provide the default appearance for the entire application.
+ */
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  
+  font-family: "Roboto", sans-serif;
+}

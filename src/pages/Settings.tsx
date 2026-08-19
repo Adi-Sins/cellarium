@@ -1,26 +1,26 @@
 /**
- * Planner page.
+ * Settings page.
  *
- * This page will eventually help users schedule experiments,
- * predict passage dates, and plan how many cells are needed.
+ * This page will eventually contain application preferences,
+ * appearance controls, and user settings.
  */
 
-function Planner() {
+function Settings() {
   return (
     <section>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-sage">
-        Planning workspace
+        Application preferences
       </p>
 
       <h2 className="text-5xl font-semibold text-sage-dark">
-        Planner
+        Settings
       </h2>
 
       <p className="mt-4 text-lg text-ink">
-        Plan cultures and experiments here.
+        Manage Cellarium preferences here.
       </p>
     </section>
   );
 }
 
-export default Planner;
+export default Settings;
