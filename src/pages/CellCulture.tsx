@@ -22,8 +22,7 @@ function Passage() {
         </h2>
 
         <p className="mt-4 max-w-2xl text-lg leading-8 text-ink/70">
-          Manage your cultures from recovery through routine maintenance
-          and cryopreservation.
+          Manage your cultures from recovery through routine maintenance and cryopreservation.
         </p>
       </div>
 
