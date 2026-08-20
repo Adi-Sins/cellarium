@@ -1,11 +1,11 @@
 /**
- * Passage workflow page.
+ * Freeze workflow page.
  *
- * This page will eventually guide the user through passaging
- * an active cell culture and calculating the required volumes.
+ * This page will eventually guide the user through
+ * preparing an active culture for cryopreservation.
  */
 
-function Passage() {
+function Freeze() {
   return (
     <section>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-sage">
@@ -13,14 +13,14 @@ function Passage() {
       </p>
 
       <h2 className="text-5xl font-semibold text-sage-dark">
-        Passage Cells
+        Freeze Cells
       </h2>
 
       <p className="mt-4 max-w-2xl text-lg leading-8 text-ink/70">
-        Split an active culture into one or more new vessels.
+        Prepare an active culture for cryopreservation.
       </p>
     </section>
   );
 }
 
-export default Passage;
+export default Freeze;

@@ -1,11 +1,11 @@
 /**
- * Passage workflow page.
+ * Media change workflow page.
  *
- * This page will eventually guide the user through passaging
- * an active cell culture and calculating the required volumes.
+ * This page will eventually help the user plan
+ * and record routine culture-medium changes.
  */
 
-function Passage() {
+function MediaChange() {
   return (
     <section>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-sage">
@@ -13,14 +13,14 @@ function Passage() {
       </p>
 
       <h2 className="text-5xl font-semibold text-sage-dark">
-        Passage Cells
+        Media Change
       </h2>
 
       <p className="mt-4 max-w-2xl text-lg leading-8 text-ink/70">
-        Split an active culture into one or more new vessels.
+        Plan and record routine culture-medium changes.
       </p>
     </section>
   );
 }
 
-export default Passage;
+export default MediaChange;
