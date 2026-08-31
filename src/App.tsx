@@ -20,8 +20,10 @@ import Freeze from "./pages/Freeze";
 import CellCount from "./pages/CellCount";
 import MediaChange from "./pages/MediaChange";
 import Settings from "./pages/Settings";
+import Login from "./pages/Login";
 
-function App() {
+
+function App() {  
   return (
     <AppLayout>
       <Routes>
@@ -58,6 +60,9 @@ function App() {
 
         {/* Media change workflow */}
         <Route path="/cell-culture/media-change" element={<MediaChange />} />
+
+        {/* Login page */}
+        <Route path="/login" element={<Login />} />
 
         {/* Application settings */}
         <Route path="/settings" element={<Settings />} />
