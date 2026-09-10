@@ -5,7 +5,7 @@
  * In a later phase, these profiles will be stored in Supabase.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { vessels } from "../data/vessels";
 import { mediaRecipes } from "../data/media";
@@ -15,6 +15,8 @@ import type {
   CultureBehaviour,
   PassageStrategy,
 } from "../types/CellLine";
+
+import { supabase } from "../utils/supabase";
 
 function Library() {
   const [name, setName] = useState("");
@@ -47,6 +49,7 @@ function Library() {
   // Cell lines created during the current session.
   // Later, these will come from the user's database account.
   const [cellLines, setCellLines] = useState<CellLine[]>([]);
+  const [editingCellLineId, setEditingCellLineId] = useState<string | null>(null);
 
   function toggleVessel(vesselId: string) {
     if (selectedVessels.includes(vesselId)) {
@@ -61,7 +64,80 @@ function Library() {
     }
   }
 
-  function saveCellLine() {
+  async function loadCellLines() {
+    const { data, error } = await supabase
+      .from("cell_lines")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading cell lines:", error);
+      return;
+    }
+
+    const formattedCellLines: CellLine[] = data.map((row) => ({
+      id: row.id,
+      name: row.name,
+      species: row.species,
+      tissue: row.tissue,
+
+      cultureBehaviour: row.culture_behaviour,
+      basalMedium: row.basal_medium ?? "",
+      supplements: [],
+
+      passageStrategy: row.passage_strategy,
+
+      typicalSplitRatio:
+        row.split_numerator !== null && row.split_denominator !== null
+          ? {
+              numerator: row.split_numerator,
+              denominator: row.split_denominator,
+            }
+          : undefined,
+
+      targetCellsPerVessel: row.target_cells_per_vessel ?? undefined,
+      targetCellsPerCm2: row.target_cells_per_cm2 ?? undefined,
+      targetCellsPerMl: row.target_cells_per_ml ?? undefined,
+
+      doublingTimeHours: row.doubling_time_hours ?? undefined,
+
+      passageConfluencyMin:
+        row.passage_confluency_min ?? undefined,
+
+      passageConfluencyMax:
+        row.passage_confluency_max ?? undefined,
+
+      preferredVessels: [],
+
+      coating: row.coating ?? undefined,
+      notes: row.notes ?? undefined,
+    }));
+
+    setCellLines(formattedCellLines);
+
+
+  }
+
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadCellLines();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  async function saveCellLine() {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error("No logged-in user found.");
+      return;
+    }
+    
     // Do not create a profile without a cell-line name.
     if (!name.trim()) {
       return;
@@ -124,7 +200,200 @@ function Library() {
       }),
     };
 
-    setCellLines([...cellLines, newCellLine]);
+    //setCellLines([...cellLines, newCellLine]);
+    let error;
+
+    if (editingCellLineId) {
+      // Update an existing cell line
+      const result = await supabase
+        .from("cell_lines")
+        .update({
+          name: newCellLine.name,
+          species: newCellLine.species,
+          tissue: newCellLine.tissue,
+          culture_behaviour: newCellLine.cultureBehaviour,
+
+          basal_medium: newCellLine.basalMedium || null,
+          passage_strategy: newCellLine.passageStrategy,
+
+          target_cells_per_vessel:
+            newCellLine.targetCellsPerVessel ?? null,
+
+          target_cells_per_cm2:
+            newCellLine.targetCellsPerCm2 ?? null,
+
+          target_cells_per_ml:
+            newCellLine.targetCellsPerMl ?? null,
+
+          split_numerator:
+            newCellLine.typicalSplitRatio?.numerator ?? null,
+
+          split_denominator:
+            newCellLine.typicalSplitRatio?.denominator ?? null,
+
+          doubling_time_hours:
+            newCellLine.doublingTimeHours ?? null,
+
+          passage_confluency_min:
+            newCellLine.passageConfluencyMin ?? null,
+
+          passage_confluency_max:
+            newCellLine.passageConfluencyMax ?? null,
+
+          coating: newCellLine.coating ?? null,
+          notes: newCellLine.notes ?? null,
+        })
+        .eq("id", editingCellLineId);
+
+      error = result.error;
+    } else {
+      // Create a new cell line
+      const result = await supabase
+        .from("cell_lines")
+        .insert({
+          user_id: user.id,
+
+          name: newCellLine.name,
+          species: newCellLine.species,
+          tissue: newCellLine.tissue,
+          culture_behaviour: newCellLine.cultureBehaviour,
+
+          basal_medium: newCellLine.basalMedium || null,
+          passage_strategy: newCellLine.passageStrategy,
+
+          target_cells_per_vessel:
+            newCellLine.targetCellsPerVessel ?? null,
+
+          target_cells_per_cm2:
+            newCellLine.targetCellsPerCm2 ?? null,
+
+          target_cells_per_ml:
+            newCellLine.targetCellsPerMl ?? null,
+
+          split_numerator:
+            newCellLine.typicalSplitRatio?.numerator ?? null,
+
+          split_denominator:
+            newCellLine.typicalSplitRatio?.denominator ?? null,
+
+          doubling_time_hours:
+            newCellLine.doublingTimeHours ?? null,
+
+          passage_confluency_min:
+            newCellLine.passageConfluencyMin ?? null,
+
+          passage_confluency_max:
+            newCellLine.passageConfluencyMax ?? null,
+
+          coating: newCellLine.coating ?? null,
+          notes: newCellLine.notes ?? null,
+        });
+
+      error = result.error;
+    } 
+
+    if (error) {
+      console.error("Error saving cell line:", error);
+      return;
+    }
+
+    await loadCellLines();
+    setEditingCellLineId(null);
+    // Reset the form after a successful save
+    setName("");
+    setSpecies("");
+    setTissue("");
+
+    setCultureBehaviour("adherent");
+    setPassageStrategy("split-ratio");
+
+    setSelectedMedia("");
+    setSelectedVessels([]);
+
+    setSplitNumerator("1");
+    setSplitDenominator("5");
+
+    setTargetCellsPerVessel("");
+    setTargetCellsPerCm2("");
+    setTargetCellsPerMl("");
+
+    setDoublingTimeHours("");
+    setConfluencyMin("");
+    setConfluencyMax("");
+
+    setCoating("");
+    setNotes("");
+
+  }
+
+  function editCellLine(cellLine: CellLine) {
+    // Remember which cell line we are editing
+    setEditingCellLineId(cellLine.id);
+
+    // Fill the form with the saved cell-line data
+    setName(cellLine.name);
+    setSpecies(cellLine.species);
+    setTissue(cellLine.tissue);
+
+    setCultureBehaviour(cellLine.cultureBehaviour);
+    setPassageStrategy(cellLine.passageStrategy);
+
+    setSplitNumerator(
+      cellLine.typicalSplitRatio?.numerator.toString() ?? "1"
+    );
+
+    setSplitDenominator(
+      cellLine.typicalSplitRatio?.denominator.toString() ?? "5"
+    );
+
+    setTargetCellsPerVessel(
+      cellLine.targetCellsPerVessel?.toString() ?? ""
+    );
+
+    setTargetCellsPerCm2(
+      cellLine.targetCellsPerCm2?.toString() ?? ""
+    );
+
+    setTargetCellsPerMl(
+      cellLine.targetCellsPerMl?.toString() ?? ""
+    );
+
+    setDoublingTimeHours(
+      cellLine.doublingTimeHours?.toString() ?? ""
+    );
+
+    setConfluencyMin(
+      cellLine.passageConfluencyMin?.toString() ?? ""
+    );
+
+    setConfluencyMax(
+      cellLine.passageConfluencyMax?.toString() ?? ""
+    );
+
+    setCoating(cellLine.coating ?? "");
+    setNotes(cellLine.notes ?? "");
+  }
+
+  async function deleteCellLine(id: string) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this cell line?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("cell_lines")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting cell line:", error);
+      return;
+    }
+
+    await loadCellLines();
   }
 
   function formatCellNumber(value: number) {
@@ -627,6 +896,23 @@ function Library() {
 
                 </div>
 
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => editCellLine(cellLine)}
+                    className="rounded-xl border border-sage-dark/20 px-4 py-2 text-sm font-medium text-sage-dark transition hover:bg-sage-light/10"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => deleteCellLine(cellLine.id)}
+                    className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
 
               </div>
             ))}
